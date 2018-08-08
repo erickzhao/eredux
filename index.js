@@ -1,12 +1,31 @@
-const getInitialState = () => ({
-  todoList: []
-});
+const constants = {
+  LOCALSTORAGE_KEY: 'TODO_STATE',
+}
+
+const actions = {
+  ADD_TODO: 'ADD_TODO',
+  REMOVE_TODO: 'REMOVE_TODO',
+  FORCE_REFRESH: 'FORCE_REFRESH'
+}
+
+const getInitialState = () => {
+  const stateString = localStorage.getItem(constants.LOCALSTORAGE_KEY);
+  if (stateString) {
+    const state = JSON.parse(stateString);
+    refreshDOM(state);
+    return state;
+  }
+
+  return {
+    todoList: []
+  }
+};
 
 const reducer = (prevState = getInitialState(), action) => {
   const nextState = {};
 
   switch (action.type) {
-    case 'ADD_TODO':
+    case actions.ADD_TODO:
       nextState.todoList = [
         ...prevState.todoList,
         {
@@ -15,15 +34,14 @@ const reducer = (prevState = getInitialState(), action) => {
         },
       ]
       break;
-    case 'REMOVE_TODO':
+    case actions.REMOVE_TODO:
       const newList = prevState.todoList.filter(t => t.key !== action.key);
       nextState.todoList = refreshIds(newList);
       break;
     default:
-      nextState = JSON.parse(JSON.stringify(prevState));
+      Object.assign(nextState, JSON.parse(JSON.stringify(prevState)));
       break;
   }
-  
   return nextState;
 }
 
@@ -36,10 +54,12 @@ function refreshIds(todos) {
   }));
 }
 
-function refreshDOM() {
+function refreshDOM(manualState) {
   const container = document.querySelector('#todos');
   removeChildNodes(container);
-  const newNodes = store.getState().todoList.map(t => {
+  
+  const state = manualState || store.getState();
+  const newNodes = state.todoList.map(t => {
     return createNodeFromTodo(t);
   });
   newNodes.forEach(n => {
@@ -68,4 +88,13 @@ function add(todoText) {
   });
 
   refreshDOM();
+  storeState();
 }
+
+function storeState() {
+  const state = store.getState();
+  localStorage.setItem(constants.LOCALSTORAGE_KEY, JSON.stringify(state));
+}
+
+// trigger pageload for localStorage getter
+reducer(undefined, {type: actions.FORCE_REFRESH});
