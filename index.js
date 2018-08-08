@@ -1,25 +1,71 @@
-const createStore = (reducer, initialState = {}) => {
-  const store = {};
+const getInitialState = () => ({
+  todoList: []
+});
+
+const reducer = (prevState = getInitialState(), action) => {
+  const nextState = {};
+
+  switch (action.type) {
+    case 'ADD_TODO':
+      nextState.todoList = [
+        ...prevState.todoList,
+        {
+          text: action.text,
+          key: prevState.todoList.length
+        },
+      ]
+      break;
+    case 'REMOVE_TODO':
+      const newList = prevState.todoList.filter(t => t.key !== action.key);
+      nextState.todoList = refreshIds(newList);
+      break;
+    default:
+      nextState = JSON.parse(JSON.stringify(prevState));
+      break;
+  }
   
-  // Current state of the store
-  store.state = initialState;
+  return nextState;
+}
 
-  // Listeners are functions that execute when an action is dispatched
-  store.listeners = [];
+const store = createStore(reducer);
 
-  // Following a UI interaction, the component calls the dispatch function
-  // to modify the state and execute each listener function
-  store.dispatch = (action) => {
-    store.state = reducer(store.state, action);
-    store.listeners.forEach(listener => listener());
-  };
+function refreshIds(todos) {
+  return todos.map((t,i) => ({
+    text: t.text,
+    key: i
+  }));
+}
 
-  store.subscribe = (listener) => {
-    store.listeners.push(listener);
-  };
+function refreshDOM() {
+  const container = document.querySelector('#todos');
+  removeChildNodes(container);
+  const newNodes = store.getState().todoList.map(t => {
+    return createNodeFromTodo(t);
+  });
+  newNodes.forEach(n => {
+    container.appendChild(n);
+  });
+}
 
-  // Exposes the state
-  store.getState = () => store.state;
+function createNodeFromTodo(todo) {
+  const node = document.createElement('div');
+  node.textContent = todo.text;
+  return node;
+}
 
-  return store;
+function removeChildNodes(node) {
+  let tmp = node.firstChild;
+  while (tmp) {
+    node.removeChild(tmp);
+    tmp = node.firstChild;
+  }
+}
+
+function add(todoText) {
+  store.dispatch({
+    'type': 'ADD_TODO',
+    'text': todoText
+  });
+
+  refreshDOM();
 }

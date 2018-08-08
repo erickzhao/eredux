@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Eridux To-Do List Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+  <h1>My TODO List</h1>
+  <div id="todos">
+  </div>
+  <form action="javascript:;" onsubmit="add(document.getElementById('todo').value)">
+    <fieldset>
+      <legend>Add a TODO</legend>
+      <p>
+        <input type="text" name="size" id="todo">
+        <button type="submit">Add</button>
+      </p>
+    </fieldset>
+    </form>
+
+
+  <script src="eridux.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
