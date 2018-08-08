@@ -68,7 +68,7 @@ function refreshDOM(manualState) {
 }
 
 function createNodeFromTodo(todo) {
-  const node = document.createElement('div');
+  const node = document.createElement('li');
   node.textContent = todo.text;
   return node;
 }
