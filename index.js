@@ -5,7 +5,8 @@ const constants = {
 const actions = {
   ADD_TODO: 'ADD_TODO',
   REMOVE_TODO: 'REMOVE_TODO',
-  FORCE_REFRESH: 'FORCE_REFRESH'
+  FORCE_REFRESH: 'FORCE_REFRESH',
+  CLEAR_ALL: 'CLEAR_ALL'
 }
 
 const getInitialState = () => {
@@ -37,6 +38,9 @@ const reducer = (prevState = getInitialState(), action) => {
     case actions.REMOVE_TODO:
       const newList = prevState.todoList.filter(t => t.key !== action.key);
       nextState.todoList = refreshIds(newList);
+      break;
+    case actions.CLEAR_ALL:
+      nextState.todoList = [];
       break;
     default:
       Object.assign(nextState, JSON.parse(JSON.stringify(prevState)));
@@ -70,7 +74,16 @@ function refreshDOM(manualState) {
 function createNodeFromTodo(todo) {
   const node = document.createElement('li');
   node.textContent = todo.text;
+  node.appendChild(createRemoveButton(todo));
   return node;
+}
+
+function createRemoveButton(todo) {
+  const btn = document.createElement('button');
+  btn.textContent = 'x';
+  btn.setAttribute('type', 'button');
+  btn.setAttribute('onclick', `remove(${todo.key})`);
+  return btn;
 }
 
 function removeChildNodes(node) {
@@ -83,8 +96,27 @@ function removeChildNodes(node) {
 
 function add(todoText) {
   store.dispatch({
-    'type': 'ADD_TODO',
-    'text': todoText
+    type: actions.ADD_TODO,
+    text: todoText
+  });
+
+  refreshDOM();
+  storeState();
+}
+
+function remove(key) {
+  store.dispatch({
+    type: actions.REMOVE_TODO,
+    key: key
+  });
+
+  refreshDOM();
+  storeState();
+}
+
+function removeAll() {
+  store.dispatch({
+    type: actions.CLEAR_ALL
   });
 
   refreshDOM();
